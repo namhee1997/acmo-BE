@@ -242,6 +242,8 @@ dmypy.json
 
 .venv
 
+.README.md
+
 ### VisualStudioCode ###
 .vscode/*
 !.vscode/settings.json
