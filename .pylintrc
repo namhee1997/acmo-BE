@@ -1,0 +1,8 @@
+[MASTER]
+extension-pkg-whitelist=sqlalchemy
+[pylint]
+init-hook='import sys; sys.path.append(".venv/Lib/sqlalchemy")'
+[TYPECHECK]
+ignored-classes=sqlalchemy.sql.expression.FunctionElement
+[TYPECHECK]
+disable=E1102
