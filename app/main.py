@@ -24,6 +24,11 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 app.add_middleware(DBSessionMiddleware, db_url=config["DATABASE_URI"])
 Base.metadata.create_all(bind=engine)
 
+@app.get("/")
+def get():
+    return config['DATABASE_URI']
+
+
 app.include_router(api_router, prefix=config['API_V1_STR'])
 
 # To run locally

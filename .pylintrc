@@ -1,5 +1,9 @@
 [MASTER]
 extension-pkg-whitelist=sqlalchemy
+[MASTER]
+extension-pkg-allow-list=pydantic
+[MASTER]
+extension-pkg-allow-list=psycopg2
 [pylint]
 init-hook='import sys; sys.path.append(".venv/Lib/sqlalchemy")'
 [TYPECHECK]

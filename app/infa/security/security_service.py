@@ -127,17 +127,18 @@ def get_current_active_user_optional(
 
 def create_access_token(data: dict, expires_delta: timedelta = None) -> str:
     # clone data
+    print(data, '->>>> data', expires_delta)
     to_encode = data.copy()
-
     # set token expire time
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:
         expire = datetime.utcnow() + timedelta(minutes=config['ACCESS_TOKEN_EXPIRE_MINUTES'])
     to_encode.update({"exp": expire})
-
+    print(to_encode, '->>>> to_encode')
     # create jwt token
     encoded_jwt = jwt.encode(to_encode, config['SECRET_KEY'], algorithm=config['ALGORITHM'])
+    print(encoded_jwt, '->>>> encoded_jwt')
     if isinstance(encoded_jwt, str):
         return encoded_jwt
     else:
@@ -153,6 +154,7 @@ class SecurityService:
 
     def authenticate_user(self, email: str, password: str) -> Union[UserInDB, bool]:
         user = self.get_user(email)
+        print('user', user)
         if not user:
             return False
         if not verify_password(password, user.hashed_password):

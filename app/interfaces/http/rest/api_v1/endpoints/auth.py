@@ -11,7 +11,7 @@ from app.use_cases.auth.register import RegisterRequestObject, RegisterUseCase
 
 router = APIRouter()
 
-@router.post("/token", response_model=Token)
+@router.post("/login", response_model=Token)
 @response_decorator()
 def login_access_token(
     request: Request,
@@ -28,10 +28,11 @@ def login_access_token(
     login_request_object = LoginRequestObject.builder(
         data=dict(
             username=form_data.username,
-            password=form_data.password
+            password=form_data.password,
         ),
     )
-    response = login_use_case.execute(request_object=login_request_object)
+    response = login_use_case.process_request(req_object=login_request_object)
+    print('response', vars(response))
     return response
 
 
@@ -48,5 +49,5 @@ def register(
         verify_token: str
     """
     reg_w_email_request_object = RegisterRequestObject.builder(data=data)
-    response = register_use_case.execute(request_object=reg_w_email_request_object)
+    response = register_use_case.process_request(req_object=reg_w_email_request_object)
     return response

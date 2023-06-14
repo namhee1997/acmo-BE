@@ -24,8 +24,10 @@ class UserInLogin(AuthInfo):
 
 class UserInRegister(AuthInfo):
     email: EmailStr
-    first_name: str
-    last_name: str
+    fullname: str
+    date_of_birth: str
+    phone_number: str
+    address: str
 
 
 class IDModelMixin(BaseModel):
@@ -55,6 +57,7 @@ class DateTimeModelMixin(BaseModel):
 
 class UserInDB(IDModelMixin, DateTimeModelMixin, UserBase):
     hashed_password: Optional[str]
+    role: Optional[str]
     reset_password_at: Optional[datetime]
     code: Optional[int]
 

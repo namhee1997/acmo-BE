@@ -7,22 +7,27 @@ from sqlalchemy.orm import Session
 from fastapi import Depends
 
 from app.db.models.users import Users
+from sqlalchemy import text
 
 from app.domain.entity import UserInDB
 from app.domain.user import UserInCreate, PersonalInUpdate
+from fastapi_sqlalchemy import db
 
 # from app.shared.utils.general import Users
+# from app.db.database import get_db
 from sqlalchemy.exc import IntegrityError
 
 from passlib.context import CryptContext
-
 
 
 class UserRepository:
     def __init__(self):
         pass
 
-    def create(self, user: UserInCreate, db: Session = Depends(Users)) -> UserInDB:
+    def create(
+        self,
+        user: UserInCreate,
+    ) -> UserInDB:
         """
         Create new user in db
         :param user:
@@ -30,18 +35,36 @@ class UserRepository:
         """
         # create user document instance
         try:
-            new_user = Users(**user.dict())
-            # and save it to db
-            db.add(new_user)
-            db.commit()
-
-            return UserInDB.from_orm(new_user)
+            query = text(
+                "INSERT INTO users (email, fullname, hashed_password, address, phone_number, date_of_birth) VALUES (:email, :fullname, :hashed_password, :address, :phone_number, :date_of_birth)"
+            )
+            db.session.execute(
+                query,
+                {
+                    "email": user.email,
+                    "fullname": user.fullname,
+                    "hashed_password": user.hashed_password,
+                    "address": user.address,
+                    "phone_number": user.phone_number,
+                    "date_of_birth": user.date_of_birth,
+                },
+            )
+            db.session.commit()
+            select_query = text("SELECT * FROM users WHERE email = :email")
+            result = db.session.execute(select_query, {"email": user.email})
+            # new_user = result.fetchall()
+            # column_names = result.keys()
+            # user_list = [dict(zip(column_names, row)) for row in new_user]
+            new_user = result.fetchone()
+            column_names = result.keys()
+            user_dict = dict(zip(column_names, new_user))
+            return user_dict
         except IntegrityError:
-            db.rollback()
             return None
 
     def get_by_id(
-        self, user_id: str, db: Session = Depends(Users)
+        self,
+        user_id: str,
     ) -> Optional[UserInDB]:
         """
         Get user in db from id
@@ -57,7 +80,10 @@ class UserRepository:
 
         return UserInDB.from_orm(user)
 
-    def get_by_email(self, email: str, db: Session = Depends(Users)) -> Optional[UserInDB]:
+    def get_by_email(
+        self,
+        email: str,
+    ):
         """
         Get user in db from email
         :param user_id:
@@ -67,12 +93,22 @@ class UserRepository:
         # retrieve unique result
         # https://mongoengine-odm.readthedocs.io/guide/querying.html#retrieving-unique-results
         try:
-            user = db.query(Users).filter(Users.email == email).first()
+            query = text("SELECT * FROM users WHERE email = :email")
+            user = db.session.execute(query, {"email": email})
+            search_results = user.fetchall()
+            column_names = user.keys()
+            user_list = [dict(zip(column_names, row)) for row in search_results]
+            if not user_list:
+                return None
         except IntegrityError:
             return None
-        return UserInDB.from_orm(user)
+        return UserInDB.from_orm(user_list)
 
-    def update(self, user_id: str, user_update: PersonalInUpdate, db: Session = Depends(Users)) -> UserInDB:
+    def update(
+        self,
+        user_id: str,
+        user_update: PersonalInUpdate,
+    ) -> UserInDB:
         try:
             update_data = user_update.dict(exclude_unset=True)
             if "token" in update_data:
@@ -92,7 +128,11 @@ class UserRepository:
         except IntegrityError as ex:
             raise ex
 
-    def change_password(self, id: str, hashed_password: str, db: Session = Depends(Users)) -> UserInDB:
+    def change_password(
+        self,
+        id: str,
+        hashed_password: str,
+    ) -> UserInDB:
         try:
             user = db.query(Users).filter(Users.id == id).first()
             password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -105,7 +145,9 @@ class UserRepository:
             raise ex
 
     def update_sent_reset_password(
-        self, id: str, updated_at: Optional[datetime], db: Session = Depends(Users)
+        self,
+        id: str,
+        updated_at: Optional[datetime],
     ) -> bool:
         try:
             user = db.query(Users).filter(Users.id == id).first()
@@ -116,7 +158,11 @@ class UserRepository:
         except IntegrityError as ex:
             raise ex
 
-    def reset_password(self, id: str, hashed_password: str, db: Session = Depends(Users)) -> True:
+    def reset_password(
+        self,
+        id: str,
+        hashed_password: str,
+    ) -> True:
         try:
             user = db.query(Users).filter(Users.id == id).first()
             password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -127,4 +173,3 @@ class UserRepository:
             return True
         except IntegrityError as ex:
             raise ex
-

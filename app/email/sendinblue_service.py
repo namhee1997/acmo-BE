@@ -22,41 +22,33 @@ class SendinblueService:
         emails_to: Union[List[str], str],
         sender: Optional[EmailStr] = None,
         text_content: Optional[str] = None,
-        template_id: Optional[int] = None,
         subject: Optional[str] = None,
-        params: Optional[Dict[str, Any]] = None,
         name: Optional[str] = None,
     ):
         try:
-            if not template_id and not subject:
-                raise Exception("Must have template_id or sender either")
-
             if isinstance(emails_to, str):
                 emails_to = [emails_to]
 
             if len(emails_to) == 0:
                 raise Exception("Must have email to")
-            email_sender = None
+            email_sender = config['EMAIL_SENDER']
             # we can get sender from template id
-            if not sender and not template_id:
-                sender = config['EMAIL_SENDER']
+            if sender:
                 email_sender = sib_api_v3_sdk.SendSmtpEmailSender(
                     email=sender, name=name
                 )
-
             to = [sib_api_v3_sdk.SendSmtpEmailTo(email=to) for to in emails_to]
             send_smtp_email = sib_api_v3_sdk.SendSmtpEmail(
                 sender=email_sender,
                 to=to,
                 text_content=text_content,
-                template_id=template_id,
                 subject=subject,
-                params=params,
+                html_content='content'
             )
             api_response = self.api.send_transac_email(send_smtp_email)
             return api_response
         except ApiException as ex:
-            raise ex
+            return ex
 
     def get_template(self, domain: Optional[str] = None):
         return ""

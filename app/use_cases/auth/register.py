@@ -1,4 +1,4 @@
-from fastapi import Depends
+from fastapi import Depends, HTTPException
 
 from app.shared import request_object, response_object, use_case
 from app.domain.entity import UserInRegister
@@ -47,10 +47,7 @@ class RegisterUseCase(use_case.UseCase):
         domain = req_object.domain
         exist_user = self.user_repository.get_by_email(email=user_info.email)
         if exist_user:
-            return response_object.ResponseFailure.build_resource_error(
-                message='Email already exist.'
-            )
-
+            return HTTPException(status_code=404, detail="Email already exist.")
         # hash password
         hashed_password = get_password_hash(password=user_info.password)
         code = random_code_5()
@@ -60,6 +57,6 @@ class RegisterUseCase(use_case.UseCase):
             code=code
         )
         entity = self.user_repository.create(user=user_register_info)
-        token = send_verify_code(email=entity.email, code=code, id=entity.id, domain=domain, name=entity.first_name)
-        send_welcome_email(email=entity.email, name=entity.first_name, domain=domain)
+        token = send_verify_code(email=entity['email'],code=code, id=entity['id'], domain=domain, name=entity['fullname'])
+        send_welcome_email(email=entity['email'], name=entity['fullname'], domain=domain)
         return Token(verify_token=token)

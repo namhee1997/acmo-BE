@@ -7,8 +7,11 @@ def transform_email(email: str) -> str:
 
 class UserInCreate(BaseModel):
     email: EmailStr
-    first_name: str
-    last_name: str
+    fullname: str
+    hashed_password: str
+    address: str
+    phone_number: str
+    date_of_birth: str
     code: Optional[int]
     hashed_password: str
 

@@ -4,7 +4,7 @@ from typing import Optional
 from pydantic import ValidationError
 from app.infa.user.user_repository import UserRepository
 from app.infa.security.security_service import SecurityService
-from fastapi import Depends
+from fastapi import Depends, HTTPException
 from datetime import datetime, timedelta
 from app.config import config
 from app.domain.enum import AuthGrantType
@@ -53,18 +53,16 @@ class LoginUseCase(use_case.UseCase):
             email=req_object.login_info.username,
             password=req_object.login_info.password,
         )
+        print('user123', user)
         if not user:
-            return response_object.ResponseFailure.build_parameters_error(
-                message='Incorrect username or password'
-            )
-        
+            return HTTPException(status_code=404, detail="User not found")
         expires_now = datetime.utcnow() - timedelta(hours=config['EXPIRES_VERIFY_TOKEN_DELTA'])
         data = {
             "sub": user.email,
             "id": user.id,
             "grant_type": AuthGrantType.VERIFY_CODE.value
         }
-        if not user.confirmed and not user.is_admin:
+        if not user.role == 'admin':
             token = create_access_token(
                 # https://fastapi.tiangolo.com/tutorial/security/oauth2-jwt/#technical-details-about-the-jwt-subject-sub
                 data=data

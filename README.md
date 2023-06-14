@@ -56,7 +56,14 @@ pip install <package_name>
 sh start-dev.sh
 ```
 
+# if use folder migrations
+alembic init migrations
+
+# alembic.init file
+script_location = migrations
 # migration -> alembic init alembic
+
+alembic init alembic
 
 # create table
 

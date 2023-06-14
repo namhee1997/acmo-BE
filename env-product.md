@@ -2,7 +2,7 @@ POSTGRES_HOST=localhost
 POSTGRES_PORT=5432
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=vivannam1
-POSTGRES_DB=accommodation_1
+POSTGRES_DB=accommodation_2
 PORT=5000
 
 # 1 day (24 \* 60 minutes)
@@ -14,7 +14,7 @@ ALGORITHM=HS256
 JWT_TOKEN_PREFIX="Bearer"
 
 HOSTING_URL=https://localhost:3000
-SENDINBLUE_API_KEY="xsmtpsib-df5610209aa5371d72fd5290fbade2f0016a37a7adfa698ffacdfd8433bb5d10-Mr52vm6fzDKQFncy"
+SENDINBLUE_API_KEY="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"
 EMAIL_SENDER=namvv.bhsoft@gmail.com
 EMAIL_RECEIVER=namvv.bhsoft@gmail.com
 
