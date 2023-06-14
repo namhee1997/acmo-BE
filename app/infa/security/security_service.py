@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import Optional, Union, List
 from pydantic import BaseModel
 from app.domain.enum import AuthGrantType
 from passlib.context import CryptContext
@@ -38,6 +38,8 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 def verify_token(token: str, grant_type: Optional[AuthGrantType] = None) -> Optional[TokenData]:
     try:
         # decode jwt token
+        if token.startswith("Bearer "):
+            token = token.split("Bearer ")[1]
         payload = jwt.decode(token, config['SECRET_KEY'], algorithms=[config['ALGORITHM']])
         # get email from decoded token
         email: str = payload.get("sub")
@@ -127,7 +129,6 @@ def get_current_active_user_optional(
 
 def create_access_token(data: dict, expires_delta: timedelta = None) -> str:
     # clone data
-    print(data, '->>>> data', expires_delta)
     to_encode = data.copy()
     # set token expire time
     if expires_delta:
@@ -135,10 +136,8 @@ def create_access_token(data: dict, expires_delta: timedelta = None) -> str:
     else:
         expire = datetime.utcnow() + timedelta(minutes=config['ACCESS_TOKEN_EXPIRE_MINUTES'])
     to_encode.update({"exp": expire})
-    print(to_encode, '->>>> to_encode')
     # create jwt token
     encoded_jwt = jwt.encode(to_encode, config['SECRET_KEY'], algorithm=config['ALGORITHM'])
-    print(encoded_jwt, '->>>> encoded_jwt')
     if isinstance(encoded_jwt, str):
         return encoded_jwt
     else:
@@ -148,15 +147,14 @@ class SecurityService:
     def __init__(self, user_repository: UserRepository = Depends(UserRepository)):
         self.user_repository = user_repository
 
-    def get_user(self, email: str) -> Optional[UserInDB]:
+    def get_user(self, email: str):
         user = self.user_repository.get_by_email(email=email)
         return user
 
-    def authenticate_user(self, email: str, password: str) -> Union[UserInDB, bool]:
+    def authenticate_user(self, email: str, password: str):
         user = self.get_user(email)
-        print('user', user)
         if not user:
             return False
-        if not verify_password(password, user.hashed_password):
+        if not verify_password(password, user[0]['hashed_password']):
             return False
-        return user
+        return user[0]

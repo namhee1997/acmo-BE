@@ -28,7 +28,17 @@ class UserInRegister(AuthInfo):
     date_of_birth: str
     phone_number: str
     address: str
+    role: str = None
 
+
+class UserInChange(BaseEntity):
+    email: EmailStr
+    fullname: str
+    date_of_birth: str
+    phone_number: str
+    address: str
+    id: str
+    role: str = None
 
 class IDModelMixin(BaseModel):
     id: Optional[PydanticObjectId]
@@ -38,19 +48,17 @@ class UserBase:
     email: EmailStr
     phone_number: Optional[str] = None
     address: Optional[str] = None
-    is_admin: Optional[bool] = None
     # default user status to inactive
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
-    confirmed: Optional[bool] = False
-    balance: Optional[float] = 0
+    username: Optional[str] = None
+    date_of_birth: str
+    fullname: Optional[str] = None
 
 
 class DateTimeModelMixin(BaseModel):
-    created_at: Optional[datetime]
-    updated_at: Optional[datetime]
+    createdAt: Optional[datetime]
+    updatedAt: Optional[datetime]
 
-    @validator("created_at", "updated_at", pre=True, always=True)
+    @validator("createdAt", "updatedAt", pre=True, always=True)
     def set_datetime_now(cls, value: datetime) -> datetime:
         return value or datetime.utcnow()
 

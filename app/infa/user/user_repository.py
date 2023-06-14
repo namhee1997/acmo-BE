@@ -74,11 +74,16 @@ class UserRepository:
         # retrieve unique result
         # https://mongoengine-odm.readthedocs.io/guide/querying.html#retrieving-unique-results
         try:
-            user = db.query(Users).filter(Users.id == user_id).first()
+            query = text("SELECT * FROM users WHERE id = :id")
+            user = db.session.execute(query, {"id": user_id})
+            search_results = user.fetchall()
+            column_names = user.keys()
+            user_list = [dict(zip(column_names, row)) for row in search_results]
+            if not user_list:
+                return None
         except IntegrityError:
             return None
-
-        return UserInDB.from_orm(user)
+        return user_list
 
     def get_by_email(
         self,
@@ -102,29 +107,31 @@ class UserRepository:
                 return None
         except IntegrityError:
             return None
-        return UserInDB.from_orm(user_list)
+        return user_list
 
     def update(
         self,
-        user_id: str,
+        id: str,
         user_update: PersonalInUpdate,
     ) -> UserInDB:
         try:
-            update_data = user_update.dict(exclude_unset=True)
-            if "token" in update_data:
-                del update_data["token"]
-            if "code" in update_data:
-                update_data["code"] = None
-            user = db.query(Users).filter(Users.id == user_id).first()
-            if user:
-                user.full_name = update_data.full_name
-                user.email = update_data.email
-                user.date_of_birth = update_data.date_of_birth
-                user.phone_number = update_data.phone_number
-                user.address = update_data.address
-                db.commit()
-                db.refresh(user)
-            return UserInDB.from_orm(user)
+            update_query = text(
+                "UPDATE users SET fullname = :fullname, email = :email, date_of_birth = :date_of_birth, phone_number = :phone_number, address = :address  WHERE id = :id"
+            )
+            db.session.execute(
+                update_query,
+                {
+                    "fullname": user_update.fullname,
+                    "email": user_update.email,
+                    "date_of_birth": user_update.date_of_birth,
+                    "phone_number": user_update.phone_number,
+                    "address": user_update.address,
+                    "id": id,
+                },
+            )
+            db.session.commit()
+            print("update_data", user_update)
+            return True
         except IntegrityError as ex:
             raise ex
 

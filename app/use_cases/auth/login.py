@@ -53,23 +53,22 @@ class LoginUseCase(use_case.UseCase):
             email=req_object.login_info.username,
             password=req_object.login_info.password,
         )
-        print('user123', user)
         if not user:
             return HTTPException(status_code=404, detail="User not found")
         expires_now = datetime.utcnow() - timedelta(hours=config['EXPIRES_VERIFY_TOKEN_DELTA'])
         data = {
-            "sub": user.email,
-            "id": user.id,
+            "sub": user['email'],
+            "id": user['id'],
             "grant_type": AuthGrantType.VERIFY_CODE.value
         }
-        if not user.role == 'admin':
+        if not user['role'] == 'admin':
             token = create_access_token(
                 # https://fastapi.tiangolo.com/tutorial/security/oauth2-jwt/#technical-details-about-the-jwt-subject-sub
                 data=data
             )
-            if expires_now > user.updated_at:
+            if user['updatedAt'] and expires_now > user['updatedAt']:
                 code = random_code_5()
-                token = send_verify_code(email=user.email, code=code, id=user.id, domain=req_object.domain, name=user.first_name)
+                token = send_verify_code(email=user['email'], code=code, id=user['id'], domain=req_object.domain, name=user['fullname'])
             return Token(verify_token=token)
         del data['grant_type']
         # create access token from user data

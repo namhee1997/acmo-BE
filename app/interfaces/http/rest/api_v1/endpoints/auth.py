@@ -32,7 +32,6 @@ def login_access_token(
         ),
     )
     response = login_use_case.process_request(req_object=login_request_object)
-    print('response', vars(response))
     return response
 
 

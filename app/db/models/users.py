@@ -8,14 +8,20 @@ from sqlalchemy import (
     Text,
     Numeric,
     Date,
+    func
 )
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
 Base = declarative_base()
 
+class BaseModel(Base):
+    __abstract__ = True
+    createdAt = Column(DateTime(timezone=True), default=func.now())
+    updatedAt = Column(DateTime(timezone=True), default=func.now(), onupdate=func.now())
 
-class Users(Base):
+
+class Users(BaseModel):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
     fullname = Column(String)
@@ -29,7 +35,7 @@ class Users(Base):
     properties = relationship("Properties", back_populates="users")
 
 
-class Properties(Base):
+class Properties(BaseModel):
     __tablename__ = "properties"
     id = Column(Integer, primary_key=True, index=True)
     address = Column(String)
@@ -41,7 +47,7 @@ class Properties(Base):
     users = relationship("Users", back_populates="properties")
 
 
-class RentalHistory(Base):
+class RentalHistory(BaseModel):
     __tablename__ = "rental_history"
     id = Column(Integer, primary_key=True)
     property_id = Column(Integer, ForeignKey("properties.id"))
@@ -52,7 +58,7 @@ class RentalHistory(Base):
     users = relationship("Users", back_populates="rental_history")
 
 
-class TransactionHistory(Base):
+class TransactionHistory(BaseModel):
     __tablename__ = "transaction_history"
     id = Column(Integer, primary_key=True)
     property_id = Column(Integer, ForeignKey("properties.id"))

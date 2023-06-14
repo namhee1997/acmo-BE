@@ -13,14 +13,15 @@ class UserInCreate(BaseModel):
     phone_number: str
     date_of_birth: str
     code: Optional[int]
-    hashed_password: str
 
     _extract_email = validator('email', pre=True, allow_reuse=True)(transform_email)
 
 class PersonalInUpdate(BaseModel):
     email: EmailStr
-    first_name: str
-    last_name: str
+    fullname: str
+    address: str
+    phone_number: str
+    date_of_birth: str
     code: Optional[int] = None
     token: Optional[str] = None
 
