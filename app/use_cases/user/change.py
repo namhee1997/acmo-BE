@@ -1,19 +1,14 @@
 from fastapi import Depends, HTTPException
 
-from app.shared import request_object, response_object, use_case
+from app.shared import request_object, use_case
 from app.domain.entity import UserInChange
-from app.domain.user import UserInCreate
 
 from typing import Optional
 
 from app.infa.user.user_repository import UserRepository
 from app.infa.security.security_service import (
-    Token,
     SecurityService,
-    get_password_hash,
 )
-from app.shared.utils.general import random_code_5
-from app.infa.user.email import send_verify_code, send_welcome_email
 
 class ChangeRequestObject(request_object.ValidRequestObject):
     def __init__(self, user_info: UserInChange, domain: Optional[str] = None):
@@ -44,7 +39,7 @@ class ChangeRequestUseCase(use_case.UseCase):
     def process_request(self, req_object: ChangeRequestObject) -> bool:
         exist_user = self.user_repository.get_by_id(user_id=req_object.user_info.id)
         if not exist_user:
-            return HTTPException(status_code=404, detail="Email not already exist.")
+            return HTTPException(status_code=404, detail="ID not already exist.")
         # hash password
 
         self.user_repository.update(id=exist_user[0]['id'],user_update=req_object.user_info)

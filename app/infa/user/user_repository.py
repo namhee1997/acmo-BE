@@ -36,7 +36,7 @@ class UserRepository:
         # create user document instance
         try:
             query = text(
-                "INSERT INTO users (email, fullname, hashed_password, address, phone_number, date_of_birth) VALUES (:email, :fullname, :hashed_password, :address, :phone_number, :date_of_birth)"
+                "INSERT INTO users (email, fullname, hashed_password, address, phone_number, date_of_birth, \"createdAt\") VALUES (:email, :fullname, :hashed_password, :address, :phone_number, :date_of_birth, :createdAt)"
             )
             db.session.execute(
                 query,
@@ -47,6 +47,7 @@ class UserRepository:
                     "address": user.address,
                     "phone_number": user.phone_number,
                     "date_of_birth": user.date_of_birth,
+                    "createdAt": datetime.now()
                 },
             )
             db.session.commit()
@@ -116,8 +117,9 @@ class UserRepository:
     ) -> UserInDB:
         try:
             update_query = text(
-                "UPDATE users SET fullname = :fullname, email = :email, date_of_birth = :date_of_birth, phone_number = :phone_number, address = :address  WHERE id = :id"
+                "UPDATE users SET fullname = :fullname, email = :email, date_of_birth = :date_of_birth, phone_number = :phone_number, address = :address, \"updatedAt\" = :updatedAt  WHERE id = :id"
             )
+
             db.session.execute(
                 update_query,
                 {
@@ -126,9 +128,11 @@ class UserRepository:
                     "date_of_birth": user_update.date_of_birth,
                     "phone_number": user_update.phone_number,
                     "address": user_update.address,
+                    "updatedAt": datetime.now(),
                     "id": id,
                 },
             )
+
             db.session.commit()
             print("update_data", user_update)
             return True

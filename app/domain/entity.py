@@ -62,6 +62,15 @@ class DateTimeModelMixin(BaseModel):
     def set_datetime_now(cls, value: datetime) -> datetime:
         return value or datetime.utcnow()
 
+class UserMe(DateTimeModelMixin):
+    id: int
+    email: EmailStr
+    phone_number: Optional[str]
+    address: Optional[str]
+    # default user status to inactive
+    role: Optional[bool] = None
+    date_of_birth: str
+    fullname: Optional[str]
 
 class UserInDB(IDModelMixin, DateTimeModelMixin, UserBase):
     hashed_password: Optional[str]
